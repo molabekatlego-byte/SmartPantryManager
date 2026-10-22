@@ -1,0 +1,113 @@
+package com.example.smartpantrymanager;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+public class DatabaseHelper extends SQLiteOpenHelper {
+
+    private static final String DATABASE_NAME = "smart_pantry.db";
+    private static final int DATABASE_VERSION = 1;
+
+    // Table Names
+    public static final String TABLE_PANTRY = "pantry_items";
+    public static final String TABLE_RECIPES = "recipes";
+
+    // Pantry Columns
+    public static final String COLUMN_PANTRY_ID = "id";
+    public static final String COLUMN_PANTRY_NAME = "name";
+    public static final String COLUMN_PANTRY_QUANTITY = "quantity";
+    public static final String COLUMN_PANTRY_CATEGORY = "category";
+    public static final String COLUMN_PANTRY_EXPIRY = "expiry_date";
+
+    // Recipe Columns
+    public static final String COLUMN_RECIPE_ID = "id";
+    public static final String COLUMN_RECIPE_TITLE = "title";
+    public static final String COLUMN_RECIPE_INGREDIENTS = "ingredients";
+    public static final String COLUMN_RECIPE_INSTRUCTIONS = "instructions";
+
+    public DatabaseHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        // Create Pantry Table
+        String createPantryTable = "CREATE TABLE " + TABLE_PANTRY + " (" +
+                COLUMN_PANTRY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_PANTRY_NAME + " TEXT, " +
+                COLUMN_PANTRY_QUANTITY + " TEXT, " +
+                COLUMN_PANTRY_CATEGORY + " TEXT, " +
+                COLUMN_PANTRY_EXPIRY + " TEXT)";
+        db.execSQL(createPantryTable);
+
+        // Create Recipes Table
+        String createRecipeTable = "CREATE TABLE " + TABLE_RECIPES + " (" +
+                COLUMN_RECIPE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_RECIPE_TITLE + " TEXT, " +
+                COLUMN_RECIPE_INGREDIENTS + " TEXT, " +
+                COLUMN_RECIPE_INSTRUCTIONS + " TEXT)";
+        db.execSQL(createRecipeTable);
+
+        // Insert Pre-loaded Recipes (15+ Recipes)
+        insertInitialRecipes(db);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PANTRY);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_RECIPES);
+        onCreate(db);
+    }
+
+    private void insertInitialRecipes(SQLiteDatabase db) {
+        addRecipe(db, "Scrambled Eggs", "Eggs, Butter, Salt, Pepper", "Whisk eggs with salt and pepper. Melt butter in a pan, pour eggs, and stir gently until soft curds form.");
+        addRecipe(db, "Tomato Pasta", "Pasta, Tomato Sauce, Garlic, Olive Oil", "Boil pasta until al dente. Sauté garlic in olive oil, add tomato sauce, mix with pasta and serve.");
+        addRecipe(db, "Grilled Cheese Sandwich", "Bread, Cheese, Butter", "Butter bread slices, place cheese between them, and grill in a pan until golden brown and melted.");
+        addRecipe(db, "Pancakes", "Flour, Milk, Eggs, Sugar, Baking Powder", "Mix ingredients into a batter. Pour onto a hot greased griddle and cook until bubbles form, then flip.");
+        addRecipe(db, "Oatmeal", "Oats, Milk or Water, Honey, Fruits", "Boil oats in milk or water for 5 minutes. Top with honey and fresh fruits.");
+        addRecipe(db, "Chicken Salad", "Chicken Breast, Lettuce, Mayo, Lemon Juice", "Boil and shred chicken. Toss with chopped lettuce, mayonnaise, and a splash of lemon juice.");
+        addRecipe(db, "Vegetable Stir Fry", "Mixed Veggies, Soy Sauce, Garlic, Oil", "Stir fry chopped vegetables in hot oil with garlic and soy sauce until tender-crisp.");
+        addRecipe(db, "Rice and Beans", "Rice, Black Beans, Onion, Spices", "Cook rice separately. Sauté onions and spices, mix with cooked black beans, and serve over rice.");
+        addRecipe(db, "French Toast", "Bread, Eggs, Cinnamon, Milk", "Dip bread slices in a mixture of beaten eggs, milk, and cinnamon. Fry in a buttered pan until golden.");
+        addRecipe(db, "Tuna Wrap", "Tortilla, Canned Tuna, Mayo, Lettuce", "Mix tuna with mayo, place on a tortilla with lettuce, and wrap tightly.");
+        addRecipe(db, "Garlic Bread", "Bread, Garlic, Butter, Parsley", "Mix softened butter with minced garlic and parsley. Spread on bread and bake until crispy.");
+        addRecipe(db, "Smoothie Bowl", "Banana, Berries, Yogurt, Granola", "Blend frozen banana, berries, and yogurt. Pour into a bowl and top with granola.");
+        addRecipe(db, "Baked Potato", "Potato, Olive Oil, Salt", "Rub potato with olive oil and salt. Bake at 200°C for 45 minutes until tender.");
+        addRecipe(db, "Egg Fried Rice", "Cooked Rice, Eggs, Peas, Soy Sauce", "Scramble eggs in a pan, add cooked rice and peas, stir-fry with soy sauce.");
+        addRecipe(db, "Bean Chili", "Canned Beans, Diced Tomatoes, Chili Powder", "Simmer beans, tomatoes, and chili powder together in a pot for 20 minutes.");
+        addRecipe(db, "Lemon Tea", "Water, Tea Bag, Lemon, Honey", "Boil water, steep tea bag, add a squeeze of lemon juice and honey to taste.");
+    }
+
+    // Basic CRUD Operations for Pantry Items
+    public boolean addPantryItem(String name, String quantity, String category, String expiry) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_PANTRY_NAME, name);
+        values.put(COLUMN_PANTRY_QUANTITY, quantity);
+        values.put(COLUMN_PANTRY_CATEGORY, category);
+        values.put(COLUMN_PANTRY_EXPIRY, expiry);
+        long result = db.insert(TABLE_PANTRY, null, values);
+        return result != -1;
+    }
+
+    public Cursor getAllPantryItems() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM " + TABLE_PANTRY, null);
+    }
+
+    public Cursor getAllRecipes() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM " + TABLE_RECIPES, null);
+    }
+
+    private void addRecipe(SQLiteDatabase db, String title, String ingredients, String instructions) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_RECIPE_TITLE, title);
+        values.put(COLUMN_RECIPE_INGREDIENTS, ingredients);
+        values.put(COLUMN_RECIPE_INSTRUCTIONS, instructions);
+        db.insert(TABLE_RECIPES, null, values);
+    }
+}
