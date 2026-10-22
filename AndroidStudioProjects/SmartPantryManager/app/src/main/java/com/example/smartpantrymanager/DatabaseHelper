@@ -110,4 +110,3 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_RECIPE_INSTRUCTIONS, instructions);
         db.insert(TABLE_RECIPES, null, values);
     }
-}
